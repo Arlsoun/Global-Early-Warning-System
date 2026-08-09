@@ -1,0 +1,19 @@
+Project Title:
+Explainable Dengue Early Warning and Decision Support System
+
+Problem:
+Dengue outbreaks can place significant pressure on communities and healthcare systems. Early identification of increasing outbreak risk can help decision-makers prioritize surveillance, prevention, and resources.
+
+Objective:
+Develop an explainable data-driven system that analyzes historical dengue, weather, geographic, and demographic information to estimate dengue outbreak risk and provide understandable evidence for each risk assessment.
+
+Core Questions:
+
+Which locations show increasing dengue risk?
+Which environmental and epidemiological factors are associated with increased risk?
+How accurately can historical data predict periods of elevated risk?
+How early can the system identify an increase in risk?
+How can the system explain its risk assessments to decision-makers?
+
+Important Principle:
+The system will support human decision-making. It will not replace public-health professionals or make medical decisions.
