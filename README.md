@@ -2,7 +2,7 @@
 
 A data-driven early-warning system for identifying countries showing potential increases in reported dengue cases.
 
-The system processes global dengue surveillance data, calculates month-to-month case growth, computes a 3-month rolling average, and assigns a risk score and risk level to countries showing increasing dengue activity.
+The system processes global dengue surveillance data, calculates month-to-month case growth, computes a 3-month rolling average, assigns risk scores, and classifies countries into HIGH, MEDIUM, and LOW risk levels.
 
 ## Project Status
 
@@ -10,34 +10,43 @@ Current dataset: WHO dengue surveillance data
 
 Latest available month: June 2026
 
-Countries analyzed: 197
+Countries analyzed: 174
 
-Automated tests: 5 passed
+HIGH risk countries: 2
+
+MEDIUM risk countries: 29
+
+LOW risk countries: 143
+
+Automated tests: 61 passed
 
 ## Key Features
 
 - Loads and processes global dengue surveillance data
 - Identifies the latest available month for each country
 - Calculates previous-month dengue cases
-- Calculates case growth
+- Calculates month-to-month case growth
 - Calculates 3-month rolling averages
 - Generates dengue risk scores
 - Classifies countries into HIGH, MEDIUM, and LOW risk levels
-- Saves processed early-warning results as CSV
-- Includes automated tests using pytest
+- Generates a global dengue risk map
+- Generates dengue risk distribution visualizations
+- Identifies countries with the strongest case-growth signals
+- Provides an interactive Streamlit dashboard
+- Provides country-level risk details
+- Allows filtering by risk level and country
+- Allows users to download the complete risk results
+- Includes automated testing using pytest
 
 ## Risk Classification
 
-HIGH risk:
-Risk score >= 6
+HIGH risk: Risk score >= 6
 
-MEDIUM risk:
-Risk score >= 3
+MEDIUM risk: Risk score >= 3
 
-LOW risk:
-Risk score < 3
+LOW risk: Risk score < 3
 
-## Example Results
+## June 2026 Results
 
 The June 2026 analysis identified:
 
@@ -45,9 +54,9 @@ HIGH risk countries: 2
 
 MEDIUM risk countries: 29
 
-LOW risk countries: 166
+LOW risk countries: 143
 
-Examples of countries with high or medium early-warning signals include:
+Countries with high or medium early-warning signals include:
 
 - Cambodia
 - Bangladesh
@@ -59,34 +68,116 @@ Examples of countries with high or medium early-warning signals include:
 - Ghana
 - Côte d'Ivoire
 
-These results represent signals generated from reported surveillance data. They are not medical diagnoses or official outbreak declarations.
+These results represent analytical signals generated from reported surveillance data. They are not medical diagnoses or official outbreak declarations.
+
+## Dashboard
+
+The project includes an interactive Streamlit dashboard.
+
+The dashboard provides:
+
+- Global dengue risk summary
+- Risk distribution chart
+- Global dengue risk map
+- Highest-risk countries
+- Strongest case-growth signals
+- Country risk details
+- Risk-level filtering
+- Country search
+- Filtered country results
+- Downloadable CSV results
+
+### Start the Dashboard
+
+From the project root, activate the virtual environment:
+
+python -m venv .venv
+
+.venv\Scripts\Activate.ps1
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+Start the dashboard:
+
+streamlit run app/dashboard_app.py
+
+The dashboard will open at:
+
+http://localhost:8501
+
+## Running the Early-Warning System
+
+From the project root:
+
+python src/early_warning.py
+
+The processed results are saved under:
+
+data/processed/
+
+## Running the Full Test Suite
+
+Run:
+
+python -m pytest -v
+
+Current result:
+
+61 passed
+
+The tests cover:
+
+- Early-warning risk scoring
+- Data preprocessing
+- Map visualization
+- Risk visualizations
+- Dashboard functionality
+- Output file creation
+- Data validation
 
 ## Project Structure
 
 Global-Early-Warning-System/
 
 ```
+app/
+    dashboard_app.py
+
 data/
-    Local datasets and processed data
+    processed/
 
 docs/
-    Project documentation
+    data-dictionary.md
+    methodology.md
+    project-definition.txt
 
 src/
     data_audit.py
     data_profile.py
     early_warning.py
+    map_visualization.py
+    preprocess.py
+    visualization.py
+    dashboard.py
 
 tests/
     test_early_warning.py
+    test_map_visualization.py
+    test_preprocess.py
+    test_visualization.py
+    test_dashboard.py
 
 .gitignore
+LICENSE
 README.md
+requirements.txt
 ```
 
 ## How It Works
 
-The system follows these main steps:
+The system follows these steps:
 
 1. Load the dengue surveillance dataset.
 2. Convert dates and case counts into usable formats.
@@ -95,91 +186,45 @@ The system follows these main steps:
 5. Calculate month-to-month case growth.
 6. Calculate the 3-month rolling average.
 7. Identify the latest observation for each country.
-8. Calculate a risk score.
+8. Calculate the risk score.
 9. Assign a risk level.
-10. Save the results as a CSV file.
-
-## Installation
-
-Create and activate a Python virtual environment:
-
-```
-python -m venv .venv
-```
-
-Windows PowerShell:
-
-```
-.venv\Scripts\Activate.ps1
-```
-
-Install the required packages:
-
-```
-pip install pandas openpyxl pytest
-```
-
-## Running the Early-Warning System
-
-From the project root:
-
-```
-python src/early_warning.py
-```
-
-The processed results are saved under:
-
-```
-data/processed/
-```
-
-## Running Tests
-
-Run the complete test suite:
-
-```
-python -m pytest tests/test_early_warning.py -v
-```
-
-Current test result:
-
-```
-5 passed
-```
+10. Generate visualizations and risk maps.
+11. Save processed results as CSV.
+12. Display results through the Streamlit dashboard.
 
 ## Data
 
 The project uses dengue surveillance data from the World Health Organization.
 
-The original local dataset is excluded from Git through .gitignore.
+The original local dataset is excluded from Git through `.gitignore`.
 
-This repository therefore contains the analysis code and documentation without distributing the local dataset.
+The repository therefore contains the analysis code, tests, documentation, and dashboard without distributing the local source dataset.
 
 ## Technologies
 
-Python
-
-Pandas
-
-OpenPyXL
-
-Pytest
-
-Git
-
-GitHub
+- Python
+- Pandas
+- OpenPyXL
+- Streamlit
+- Pytest
+- Git
+- GitHub
 
 ## Future Improvements
 
-- Add automated data updates
-- Add dengue trend visualizations
-- Add country-level dashboards
-- Add geographic risk maps
-- Add time-series forecasting
-- Add anomaly detection
-- Add automated GitHub Actions testing
-- Improve risk scoring using statistical and machine-learning methods
+- Automated data updates
+- Time-series forecasting
+- Anomaly detection
+- Improved statistical risk scoring
+- Machine-learning-based risk prediction
+- Interactive time-series charts
+- Country comparison tools
+- Historical risk tracking
+- Automated GitHub Actions testing
+- Deployment of the Streamlit dashboard
 
 ## Disclaimer
 
-This project is intended for data analysis and early-warning research. Risk classifications are analytical signals based on reported surveillance data and should not be treated as clinical advice or official public-health alerts.
+This project is intended for data analysis and early-warning research.
+
+Risk classifications are analytical signals based on reported surveillance data. They should not be treated as clinical advice, medical diagnosis, or official public-health alerts.
