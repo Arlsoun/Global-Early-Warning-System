@@ -2,3 +2,5 @@ pandas
 openpyxl
 pytest
 streamlit
+matplotlib
+geopandas
