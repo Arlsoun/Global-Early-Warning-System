@@ -35,8 +35,9 @@ Automated tests: 61 passed
 - Provides an interactive Streamlit dashboard
 - Provides country-level risk details
 - Allows filtering by risk level and country
-- Allows users to download the complete risk results
+- Allows users to download complete or filtered risk results
 - Includes automated testing using pytest
+- Includes automated GitHub Actions testing
 
 ## Risk Classification
 
@@ -89,21 +90,26 @@ The dashboard provides:
 
 ### Start the Dashboard
 
-From the project root, activate the virtual environment:
+From the project root, create and activate the virtual environment:
 
+```powershell
 python -m venv .venv
-
 .venv\Scripts\Activate.ps1
+```
 
 Install dependencies:
 
+```powershell
 pip install -r requirements.txt
+```
 
 Start the dashboard:
 
-streamlit run app/dashboard_app.py
+```powershell
+streamlit run app\dashboard_app.py
+```
 
-The dashboard will open at:
+The dashboard will be available at:
 
 http://localhost:8501
 
@@ -111,68 +117,94 @@ http://localhost:8501
 
 From the project root:
 
-python src/early_warning.py
+```powershell
+python src\early_warning.py
+```
 
 The processed results are saved under:
 
+```text
 data/processed/
+```
 
 ## Running the Full Test Suite
 
 Run:
 
+```powershell
 python -m pytest -v
+```
 
 Current result:
 
+```text
 61 passed
+```
 
 The tests cover:
 
 - Early-warning risk scoring
 - Data preprocessing
+- Data quality validation
 - Map visualization
 - Risk visualizations
 - Dashboard functionality
 - Output file creation
 - Data validation
 
+## Continuous Integration
+
+The project uses GitHub Actions to automatically run the test suite when changes are pushed to the main branch or submitted through a pull request.
+
+The workflow installs the project dependencies and runs:
+
+```powershell
+python -m pytest -v
+```
+
+This helps verify that new changes do not break the existing system.
+
 ## Project Structure
 
+```text
 Global-Early-Warning-System/
 
-```
-app/
-    dashboard_app.py
-
-data/
-    processed/
-
-docs/
-    data-dictionary.md
-    methodology.md
-    project-definition.txt
-
-src/
-    data_audit.py
-    data_profile.py
-    early_warning.py
-    map_visualization.py
-    preprocess.py
-    visualization.py
-    dashboard.py
-
-tests/
-    test_early_warning.py
-    test_map_visualization.py
-    test_preprocess.py
-    test_visualization.py
-    test_dashboard.py
-
-.gitignore
-LICENSE
-README.md
-requirements.txt
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
+├── app/
+│   └── dashboard_app.py
+│
+├── data/
+│   └── processed/
+│
+├── docs/
+│   ├── data-dictionary.md
+│   ├── methodology.md
+│   └── project-definition.txt
+│
+├── src/
+│   ├── data_audit.py
+│   ├── data_profile.py
+│   ├── early_warning.py
+│   ├── map_visualization.py
+│   ├── preprocess.py
+│   ├── visualization.py
+│   └── dashboard.py
+│
+├── tests/
+│   ├── test_dashboard.py
+│   ├── test_data_quality.py
+│   ├── test_early_warning.py
+│   ├── test_map_visualization.py
+│   ├── test_preprocess.py
+│   └── test_visualization.py
+│
+├── .gitignore
+├── LICENSE
+├── README.md
+└── requirements.txt
 ```
 
 ## How It Works
@@ -205,10 +237,12 @@ The repository therefore contains the analysis code, tests, documentation, and d
 - Python
 - Pandas
 - OpenPyXL
+- Matplotlib
 - Streamlit
 - Pytest
 - Git
 - GitHub
+- GitHub Actions
 
 ## Future Improvements
 
@@ -220,7 +254,6 @@ The repository therefore contains the analysis code, tests, documentation, and d
 - Interactive time-series charts
 - Country comparison tools
 - Historical risk tracking
-- Automated GitHub Actions testing
 - Deployment of the Streamlit dashboard
 
 ## Disclaimer
