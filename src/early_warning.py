@@ -1,18 +1,11 @@
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
 
-# ============================================================
-# PROJECT PATHS
-# ============================================================
+from src.preprocess import prepare_analysis_data
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-DATA_FILE = (
-    PROJECT_ROOT
-    / "data"
-    / "WHO_Dengue_Global_2026_Working.xlsx"
-)
 
 
 # ============================================================
@@ -81,33 +74,19 @@ def main():
     print("GLOBAL DENGUE EARLY-WARNING SYSTEM")
     print("=" * 70)
 
-    print("\nLoading WHO dengue dataset...")
-    print(f"File: {DATA_FILE}")
+    print("\nLoading and preprocessing WHO dengue dataset...")
 
-    df = pd.read_excel(DATA_FILE)
+    df = prepare_analysis_data()
 
     print(f"Rows loaded: {len(df):,}")
 
     # ========================================================
-    # PREPARE DATA
+    # USE CLEANED CASE VALUES
     # ========================================================
 
-    df["date"] = pd.to_datetime(
-        df["date"],
+    df["cases_for_analysis"] = pd.to_numeric(
+        df["cases_for_analysis"],
         errors="coerce"
-    )
-
-    df["cases"] = pd.to_numeric(
-        df["cases"],
-        errors="coerce"
-    )
-
-    df = df.dropna(
-        subset=["date", "country", "iso3"]
-    )
-
-    df = df.sort_values(
-        ["country", "date"]
     )
 
     # ========================================================
@@ -115,7 +94,7 @@ def main():
     # ========================================================
 
     df["previous_cases"] = (
-        df.groupby("country")["cases"]
+        df.groupby("country")["cases_for_analysis"]
         .shift(1)
     )
 
@@ -126,7 +105,7 @@ def main():
     previous = df["previous_cases"].fillna(0)
 
     df["case_growth"] = (
-        (df["cases"] - previous)
+        (df["cases_for_analysis"] - previous)
         / previous.replace(0, 1)
     )
 
@@ -135,7 +114,7 @@ def main():
     # ========================================================
 
     df["rolling_3m"] = (
-        df.groupby("country")["cases"]
+        df.groupby("country")["cases_for_analysis"]
         .transform(
             lambda x: x.rolling(
                 window=3,
@@ -156,14 +135,30 @@ def main():
     )
 
     # ========================================================
+    # REMOVE COUNTRIES WITHOUT USABLE CASE DATA
+    # ========================================================
+
+    latest = latest.dropna(
+        subset=["cases_for_analysis"]
+    ).copy()
+
+    # ========================================================
     # RISK SCORE
     # ========================================================
 
     latest["risk_score"] = latest.apply(
         lambda row: calculate_risk_score(
-            cases=row["cases"],
-            previous_cases=row["previous_cases"],
-            rolling_3m=row["rolling_3m"]
+            cases=row["cases_for_analysis"],
+            previous_cases=(
+                row["previous_cases"]
+                if pd.notna(row["previous_cases"])
+                else 0
+            ),
+            rolling_3m=(
+                row["rolling_3m"]
+                if pd.notna(row["rolling_3m"])
+                else 0
+            )
         ),
         axis=1
     )
@@ -202,7 +197,7 @@ def main():
     # ========================================================
 
     signals = latest[
-        (latest["cases"] > 0)
+        (latest["cases_for_analysis"] > 0)
         & (latest["case_growth"] > 0)
     ].copy()
 
@@ -224,7 +219,7 @@ def main():
         display_columns = [
             "country",
             "iso3",
-            "cases",
+            "cases_for_analysis",
             "previous_cases",
             "case_growth",
             "rolling_3m",
@@ -238,8 +233,8 @@ def main():
             .copy()
         )
 
-        result["cases"] = (
-            result["cases"]
+        result["cases_for_analysis"] = (
+            result["cases_for_analysis"]
             .round(0)
         )
 
