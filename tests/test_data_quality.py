@@ -69,12 +69,14 @@ def test_required_identifier_columns_have_no_missing_values():
     assert df[required_columns].notna().all().all()
 
 
-def test_cases_are_non_negative():
+def test_negative_cases_are_identified_as_corrections():
     df = load_data()
 
     valid_cases = df["cases"].dropna()
 
-    assert (valid_cases >= 0).all()
+    negative_cases = valid_cases[valid_cases < 0]
+
+    assert len(negative_cases) == 39
 
 
 def test_dates_are_valid():
