@@ -32,13 +32,13 @@ jobs:
 
       - name: Generate early-warning results
         run: |
-          python src/early_warning.py
+          python -m src.early_warning
 
       - name: Generate visualizations
         run: |
-          python src/visualization.py
-          python src/map_visualization.py
-          python src/dashboard.py
+          python -m src.visualization
+          python -m src.map_visualization
+          python -m src.dashboard
 
       - name: Run tests
         run: |
