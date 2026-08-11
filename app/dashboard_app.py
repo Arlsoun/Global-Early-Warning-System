@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 
 import pandas as pd
 import streamlit as st
@@ -9,6 +10,10 @@ import streamlit as st
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Make the project root importable on Streamlit Cloud
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 RESULTS_FILE = (
     PROJECT_ROOT
@@ -42,13 +47,15 @@ st.set_page_config(
 # ============================================================
 
 def generate_outputs():
-    """Generate analysis results and visualizations if missing."""
+    """Generate required analysis outputs if they are missing."""
 
+    # Generate early-warning results
     if not RESULTS_FILE.exists():
         from src.early_warning import main as run_early_warning
 
         run_early_warning()
 
+    # Generate global risk map
     if not MAP_FILE.exists():
         from src.map_visualization import main as run_map_visualization
 
@@ -70,10 +77,11 @@ def load_results():
 
     df = pd.read_csv(RESULTS_FILE)
 
-    df["date"] = pd.to_datetime(
-        df["date"],
-        errors="coerce",
-    )
+    if "date" in df.columns:
+        df["date"] = pd.to_datetime(
+            df["date"],
+            errors="coerce",
+        )
 
     return df
 
@@ -152,6 +160,7 @@ low_risk = int(
 )
 
 total_countries = df["country"].nunique()
+
 
 st.subheader("Global Summary")
 
@@ -370,6 +379,7 @@ else:
         )
 
     with detail_col4:
+
         previous_cases = country_data["previous_cases"]
 
         if pd.isna(previous_cases):
@@ -458,7 +468,6 @@ with download_col1:
         file_name="dengue_early_warning_results.csv",
         mime="text/csv",
     )
-
 
 with download_col2:
 
