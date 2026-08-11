@@ -38,16 +38,41 @@ st.set_page_config(
 
 
 # ============================================================
+# GENERATE REQUIRED OUTPUTS
+# ============================================================
+
+def generate_outputs():
+    """Generate analysis results and visualizations if missing."""
+
+    if not RESULTS_FILE.exists():
+        from src.early_warning import main as run_early_warning
+
+        run_early_warning()
+
+    if not MAP_FILE.exists():
+        from src.map_visualization import main as run_map_visualization
+
+        run_map_visualization()
+
+
+# ============================================================
 # LOAD DATA
 # ============================================================
 
 @st.cache_data
 def load_results():
+    generate_outputs()
+
+    if not RESULTS_FILE.exists():
+        raise FileNotFoundError(
+            f"Analysis results were not generated: {RESULTS_FILE}"
+        )
+
     df = pd.read_csv(RESULTS_FILE)
 
     df["date"] = pd.to_datetime(
         df["date"],
-        errors="coerce"
+        errors="coerce",
     )
 
     return df
@@ -76,17 +101,17 @@ st.sidebar.header("Dashboard Filters")
 risk_options = [
     "HIGH",
     "MEDIUM",
-    "LOW"
+    "LOW",
 ]
 
 selected_risk = st.sidebar.multiselect(
     "Risk level",
     options=risk_options,
-    default=risk_options
+    default=risk_options,
 )
 
 country_search = st.sidebar.text_input(
-    "Search country"
+    "Search country",
 )
 
 
@@ -103,7 +128,7 @@ if country_search:
         filtered_df["country"].str.contains(
             country_search,
             case=False,
-            na=False
+            na=False,
         )
     ]
 
@@ -128,7 +153,6 @@ low_risk = int(
 
 total_countries = df["country"].nunique()
 
-
 st.subheader("Global Summary")
 
 col1, col2, col3, col4, col5 = st.columns(5)
@@ -136,31 +160,31 @@ col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     st.metric(
         "Latest Month",
-        latest_date.strftime("%B %Y")
+        latest_date.strftime("%B %Y"),
     )
 
 with col2:
     st.metric(
         "Countries",
-        f"{total_countries:,}"
+        f"{total_countries:,}",
     )
 
 with col3:
     st.metric(
         "HIGH Risk",
-        high_risk
+        high_risk,
     )
 
 with col4:
     st.metric(
         "MEDIUM Risk",
-        medium_risk
+        medium_risk,
     )
 
 with col5:
     st.metric(
         "LOW Risk",
-        low_risk
+        low_risk,
     )
 
 
@@ -175,13 +199,13 @@ risk_summary = pd.DataFrame(
         "Risk Level": [
             "HIGH",
             "MEDIUM",
-            "LOW"
+            "LOW",
         ],
         "Countries": [
             high_risk,
             medium_risk,
-            low_risk
-        ]
+            low_risk,
+        ],
     }
 )
 
@@ -205,7 +229,7 @@ if MAP_FILE.exists():
     with map_col2:
         st.image(
             str(MAP_FILE),
-            width="stretch"
+            width="stretch",
         )
 
 else:
@@ -224,7 +248,7 @@ st.subheader("Highest-Risk Countries")
 top_risk = (
     df.sort_values(
         ["risk_score", "case_growth"],
-        ascending=[False, False]
+        ascending=[False, False],
     )
     [
         [
@@ -235,7 +259,7 @@ top_risk = (
             "case_growth",
             "rolling_3m",
             "risk_score",
-            "risk_level"
+            "risk_level",
         ]
     ]
     .head(10)
@@ -253,7 +277,7 @@ top_risk["rolling_3m"] = top_risk[
 st.dataframe(
     top_risk,
     width="stretch",
-    hide_index=True
+    hide_index=True,
 )
 
 
@@ -270,7 +294,7 @@ growth_signals = (
     ]
     .sort_values(
         "case_growth",
-        ascending=False
+        ascending=False,
     )
     [
         [
@@ -280,7 +304,7 @@ growth_signals = (
             "previous_cases",
             "case_growth",
             "risk_score",
-            "risk_level"
+            "risk_level",
         ]
     ]
     .head(10)
@@ -294,7 +318,7 @@ growth_signals["case_growth"] = growth_signals[
 st.dataframe(
     growth_signals,
     width="stretch",
-    hide_index=True
+    hide_index=True,
 )
 
 
@@ -316,7 +340,7 @@ else:
         "Select a country",
         sorted(
             filtered_df["country"].unique()
-        )
+        ),
     )
 
     country_data = filtered_df[
@@ -330,25 +354,32 @@ else:
     with detail_col1:
         st.metric(
             "Risk Level",
-            country_data["risk_level"]
+            country_data["risk_level"],
         )
 
     with detail_col2:
         st.metric(
             "Risk Score",
-            int(country_data["risk_score"])
+            int(country_data["risk_score"]),
         )
 
     with detail_col3:
         st.metric(
             "Current Cases",
-            f"{country_data['cases_for_analysis']:,.0f}"
+            f"{country_data['cases_for_analysis']:,.0f}",
         )
 
     with detail_col4:
+        previous_cases = country_data["previous_cases"]
+
+        if pd.isna(previous_cases):
+            previous_cases_display = "N/A"
+        else:
+            previous_cases_display = f"{previous_cases:,.0f}"
+
         st.metric(
             "Previous Cases",
-            f"{country_data['previous_cases']:,.0f}"
+            previous_cases_display,
         )
 
     detail_col1, detail_col2 = st.columns(2)
@@ -380,14 +411,14 @@ filtered_columns = [
     "case_growth",
     "rolling_3m",
     "risk_score",
-    "risk_level"
+    "risk_level",
 ]
 
 filtered_table = (
     filtered_df[filtered_columns]
     .sort_values(
         ["risk_score", "case_growth"],
-        ascending=[False, False]
+        ascending=[False, False],
     )
     .copy()
 )
@@ -403,12 +434,12 @@ filtered_table["rolling_3m"] = filtered_table[
 st.dataframe(
     filtered_table,
     width="stretch",
-    hide_index=True
+    hide_index=True,
 )
 
 
 # ============================================================
-# DOWNLOAD FILTERED RESULTS
+# DOWNLOAD RESULTS
 # ============================================================
 
 st.subheader("Download Results")
@@ -425,7 +456,7 @@ with download_col1:
         label="Download Full Risk Results",
         data=full_csv,
         file_name="dengue_early_warning_results.csv",
-        mime="text/csv"
+        mime="text/csv",
     )
 
 
@@ -439,7 +470,7 @@ with download_col2:
         label="Download Filtered Results",
         data=filtered_csv,
         file_name="dengue_filtered_results.csv",
-        mime="text/csv"
+        mime="text/csv",
     )
 
 
