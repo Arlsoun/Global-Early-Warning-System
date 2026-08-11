@@ -26,6 +26,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Check required data file
+        run: |
+          test -f data/WHO_Dengue_Global_2026_Working.xlsx
+
+      - name: Generate early-warning results
+        run: |
+          python src/early_warning.py
+
+      - name: Generate visualizations
+        run: |
+          python src/visualization.py
+          python src/map_visualization.py
+          python src/dashboard.py
+
       - name: Run tests
         run: |
           python -m pytest -v
