@@ -20,6 +20,8 @@ LOW risk countries: 143
 
 Automated tests: 61 passed
 
+GitHub Actions: Passing
+
 ## Key Features
 
 - Loads and processes global dengue surveillance data
@@ -37,7 +39,7 @@ Automated tests: 61 passed
 - Allows filtering by risk level and country
 - Allows users to download complete or filtered risk results
 - Includes automated testing using pytest
-- Includes automated GitHub Actions testing
+- Includes automated GitHub Actions testing and analysis
 
 ## Risk Classification
 
@@ -154,21 +156,37 @@ The tests cover:
 
 ## Continuous Integration
 
-The project uses GitHub Actions to automatically run the test suite when changes are pushed to the main branch or submitted through a pull request.
+The project uses GitHub Actions to automatically validate the project when changes are pushed to the main branch or submitted through a pull request.
 
-The workflow installs the project dependencies and runs:
+The workflow:
+
+1. Checks out the repository.
+2. Sets up Python 3.12.
+3. Installs project dependencies.
+4. Checks that the required WHO dengue dataset exists.
+5. Generates early-warning results.
+6. Generates visualizations.
+7. Generates the global dengue risk map.
+8. Generates dashboard outputs.
+9. Runs the complete pytest test suite.
+
+The workflow executes:
 
 ```powershell
+python -m src.early_warning
+python -m src.visualization
+python -m src.map_visualization
+python -m src.dashboard
 python -m pytest -v
 ```
 
-This helps verify that new changes do not break the existing system.
+The current GitHub Actions workflow passes successfully.
 
 ## Project Structure
 
 ```text
 Global-Early-Warning-System/
-
+│
 ├── .github/
 │   └── workflows/
 │       └── tests.yml
@@ -177,7 +195,10 @@ Global-Early-Warning-System/
 │   └── dashboard_app.py
 │
 ├── data/
+│   ├── WHO_Dengue_Global_2026_Working.xlsx
 │   └── processed/
+│       ├── dashboard/
+│       └── visualizations/
 │
 ├── docs/
 │   ├── data-dictionary.md
@@ -228,9 +249,19 @@ The system follows these steps:
 
 The project uses dengue surveillance data from the World Health Organization.
 
-The original local dataset is excluded from Git through `.gitignore`.
+The working dataset is stored in the repository at:
 
-The repository therefore contains the analysis code, tests, documentation, and dashboard without distributing the local source dataset.
+```text
+data/WHO_Dengue_Global_2026_Working.xlsx
+```
+
+The dataset is used as the source for the automated analysis and GitHub Actions workflow.
+
+Processed analysis results and generated visualizations are stored under:
+
+```text
+data/processed/
+```
 
 ## Technologies
 
