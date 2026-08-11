@@ -1,5 +1,4 @@
 from pathlib import Path
-import sys
 
 import pandas as pd
 import streamlit as st
@@ -10,10 +9,6 @@ import streamlit as st
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-# Make the project root importable on Streamlit Cloud
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 RESULTS_FILE = (
     PROJECT_ROOT
@@ -43,36 +38,14 @@ st.set_page_config(
 
 
 # ============================================================
-# GENERATE REQUIRED OUTPUTS
-# ============================================================
-
-def generate_outputs():
-    """Generate required analysis outputs if they are missing."""
-
-    # Generate early-warning results
-    if not RESULTS_FILE.exists():
-        from src.early_warning import main as run_early_warning
-
-        run_early_warning()
-
-    # Generate global risk map
-    if not MAP_FILE.exists():
-        from src.map_visualization import main as run_map_visualization
-
-        run_map_visualization()
-
-
-# ============================================================
 # LOAD DATA
 # ============================================================
 
 @st.cache_data
 def load_results():
-    generate_outputs()
-
     if not RESULTS_FILE.exists():
         raise FileNotFoundError(
-            f"Analysis results were not generated: {RESULTS_FILE}"
+            f"Required results file was not found: {RESULTS_FILE}"
         )
 
     df = pd.read_csv(RESULTS_FILE)
@@ -167,9 +140,14 @@ st.subheader("Global Summary")
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
+    if pd.isna(latest_date):
+        latest_date_display = "N/A"
+    else:
+        latest_date_display = latest_date.strftime("%B %Y")
+
     st.metric(
         "Latest Month",
-        latest_date.strftime("%B %Y"),
+        latest_date_display,
     )
 
 with col2:
@@ -244,7 +222,7 @@ if MAP_FILE.exists():
 else:
 
     st.warning(
-        "Global dengue risk map has not been generated yet."
+        "Global dengue risk map is not available."
     )
 
 
@@ -385,7 +363,9 @@ else:
         if pd.isna(previous_cases):
             previous_cases_display = "N/A"
         else:
-            previous_cases_display = f"{previous_cases:,.0f}"
+            previous_cases_display = (
+                f"{previous_cases:,.0f}"
+            )
 
         st.metric(
             "Previous Cases",
@@ -469,6 +449,7 @@ with download_col1:
         mime="text/csv",
     )
 
+
 with download_col2:
 
     filtered_csv = filtered_table.to_csv(
@@ -489,8 +470,13 @@ with download_col2:
 
 st.divider()
 
+if pd.isna(latest_date):
+    footer_date = "N/A"
+else:
+    footer_date = latest_date.strftime("%B %Y")
+
 st.caption(
     "Global Dengue Early-Warning System | "
     "WHO dengue surveillance data | "
-    f"Latest data: {latest_date.strftime('%B %Y')}"
+    f"Latest data: {footer_date}"
 )
